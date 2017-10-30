@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package Interface;
+package core;
 
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -20,6 +20,7 @@ public class AttributeDetails {
 	private String name;
 	private int type;
 	private int numInst;
+	private int index;
 	private double minValue;
 	private double maxValue;
 	private double mean;
@@ -29,15 +30,16 @@ public class AttributeDetails {
 	
 	public AttributeDetails(Instances dataset, int attribute)
 	{
-		this.dataset = dataset;	
+		this.dataset = dataset;
+		this.index = attribute;
 		this.numInst = this.dataset.numInstances();
 		this.nominalValues = new ArrayList<>();
-		this.mxCalculateDetails(attribute);
+		this.mxCalculateDetails();
 	}
 	
-	private void mxCalculateDetails(int attribute)
+	private void mxCalculateDetails()
 	{
-		Attribute attr = this.dataset.attribute(attribute);
+		Attribute attr = this.dataset.attribute(this.index);
 		this.mean = this.variance = this.stdDeviation = 0;
 		this.name = attr.name();
 		this.type = attr.type();
@@ -46,10 +48,10 @@ public class AttributeDetails {
 		{
 			case Attribute.NUMERIC:
 				
-				this.minValue = this.maxValue = dataset.get(0).value(attribute);
+				this.minValue = this.maxValue = dataset.get(0).value(this.index);
 				// Compute the sample mean
 				for (int i = 1; i < this.numInst; i++) {
-					double value = dataset.get(i).value(attribute);
+					double value = dataset.get(i).value(this.index);
 					if(value < minValue)
 						this.minValue = value;
 					else if(value > maxValue)
@@ -59,7 +61,7 @@ public class AttributeDetails {
 				this.mean = this.mean / this.numInst;
 				// Computes the sum of the squares of the differences from the mean
 				for (int i = 1; i < this.numInst; i++) {
-					this.variance += Math.pow(dataset.get(i).value(attribute) - this.mean, 2);
+					this.variance += Math.pow(dataset.get(i).value(this.index) - this.mean, 2);
 				}
 				this.variance = this.variance / (this.numInst - 1);
 				this.stdDeviation = Math.sqrt(this.variance);
@@ -163,8 +165,24 @@ public class AttributeDetails {
 		this.stdDeviation = stdDeviation;
 	}
 	
+	/**
+	 * @return the index
+	 */
+	public int getIndex()
+	{
+		return index;
+	}
+
+	/**
+	 * @param index the index to set
+	 */
+	public void setIndex(int index)
+	{
+		this.index = index;
+	}
+	
 	public ArrayList<String> getNominalValues()
 	{
 		return this.nominalValues;
-	}
+	}	
 }

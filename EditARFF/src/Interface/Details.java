@@ -5,10 +5,14 @@
  */
 package Interface;
 
+import core.AttributeDetails;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Locale;
+import javax.swing.JOptionPane;
+import weka.core.Instances;
+import core.ARFFile;
 
 /**
  *
@@ -16,19 +20,23 @@ import java.util.Locale;
  */
 public class Details extends javax.swing.JDialog {
 
+	private Instances dataset;
 	private AttributeDetails attrDetail;
+	private boolean changes;
 	
 	/**
 	 * Creates new form Details
 	 */
-	public Details(java.awt.Frame parent, boolean modal, AttributeDetails attrDetail, int state)
+	public Details(java.awt.Frame parent, boolean modal, AttributeDetails attrDetail, int state, Instances dataset)
 	{
 		super(parent, modal);
 		this.attrDetail = attrDetail;
+		this.dataset = dataset;
 		initComponents();
 		this.mxLoadComboBox();
 		this.mxLoadAttributeDetails();
 		this.mxStateControls(state);
+		this.changes = false;
 	}
 
 	/**
@@ -65,6 +73,7 @@ public class Details extends javax.swing.JDialog {
         jScrollPane1 = new javax.swing.JScrollPane();
         txcValues = new javax.swing.JTextArea();
         jLabel12 = new javax.swing.JLabel();
+        cmbSave = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Attribute Details");
@@ -262,6 +271,15 @@ public class Details extends javax.swing.JDialog {
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
+        cmbSave.setText("Save Changes");
+        cmbSave.addMouseListener(new java.awt.event.MouseAdapter()
+        {
+            public void mousePressed(java.awt.event.MouseEvent evt)
+            {
+                cmbSaveMousePressed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -273,6 +291,8 @@ public class Details extends javax.swing.JDialog {
                     .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(cmbSave)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(cmbReturn))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jLabel3)
@@ -292,7 +312,9 @@ public class Details extends javax.swing.JDialog {
                 .addGap(18, 18, 18)
                 .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGap(18, 18, 18)
-                .addComponent(cmbReturn)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(cmbReturn)
+                    .addComponent(cmbSave))
                 .addContainerGap())
         );
 
@@ -304,6 +326,10 @@ public class Details extends javax.swing.JDialog {
         this.dispose();
     }//GEN-LAST:event_cmbReturnMousePressed
 
+    private void cmbSaveMousePressed(java.awt.event.MouseEvent evt)//GEN-FIRST:event_cmbSaveMousePressed
+    {//GEN-HEADEREND:event_cmbSaveMousePressed
+        this.mxAplyChanges();
+    }//GEN-LAST:event_cmbSaveMousePressed
 	
 	private void mxLoadAttributeDetails()
 	{
@@ -335,26 +361,63 @@ public class Details extends javax.swing.JDialog {
 	
 	private void mxLoadComboBox()
 	{
-		String laNames[] = {"NUMERIC", "NOMINAL", "STRING", "DATA", "RELATIONAL"}; 
-        Integer laCodes[] = new Integer[laNames.length];
+		TypeAttribute types[] = TypeAttribute.values();
+		String laNames[] = new String[types.length]; 
+        Integer laCodes[] = new Integer[types.length];
 		BasicComboBoxModel loModel;
         
-        for(int i = 0; i < laNames.length; i++)
-            laCodes[i] = i;
-        
+		for(int i = 0; i < laNames.length; i++)
+		{
+            laCodes[i] = types[i].getCode();
+			laNames[i] = types[i].getDescription();
+		}
         loModel = new BasicComboBoxModel(laCodes, laNames);
         this.cbbType.setModel(loModel);        
 	}
 
+	private void mxAplyChanges()
+	{
+		int lnType = ((BasicComboBoxModelObject)this.cbbType.getSelectedItem()).getCodigo();
+		
+		if(lnType != TypeAttribute.NOMINAL.getCode())
+		{
+			JOptionPane.showMessageDialog(null, "Is not posible convert to");
+			return;
+		}
+		
+		else if(this.attrDetail.getType() == TypeAttribute.NUMERIC.getCode())
+		{
+			ARFFile file = new ARFFile();
+			file.setDataset(this.dataset);
+			file.mxConvertNumericToNominal(this.attrDetail.getIndex() + 1);
+			this.changes = true;
+			this.attrDetail = new AttributeDetails(file.getDataset(), this.attrDetail.getIndex());
+			this.mxLoadAttributeDetails();
+			this.mxStateControls(0);
+		}
+		
+		boolean normalize = false;
+		
+		if(normalize)
+		{
+			ARFFile file = new ARFFile();
+			file.setDataset(this.dataset);
+			file.mxNormalizeAttribute(this.attrDetail.getIndex(), this.attrDetail.getMinValue(), this.attrDetail.getMaxValue());
+			this.changes = true;
+		}
+	}
+	
 	private void mxStateControls(int state)
 	{
 		this.cbbType.setEnabled(false);
+		this.cmbSave.setEnabled(false);
 		
 		switch(state)
 		{
 			case 0:
 				break;
 			case 1:
+				this.cmbSave.setEnabled(true);
 				this.cbbType.setEnabled(true);
 				break;
 			default:
@@ -362,9 +425,25 @@ public class Details extends javax.swing.JDialog {
 		}
 	}
 	
+	public Instances getDataset()
+	{
+		return this.dataset;
+	}
+	
+	public AttributeDetails getAttributeDetails()
+	{
+		return this.attrDetail;
+	}
+	
+	public boolean getChanges()
+	{
+		return this.changes;				
+	}
+	
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox<String> cbbType;
     private javax.swing.JButton cmbReturn;
+    private javax.swing.JButton cmbSave;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;

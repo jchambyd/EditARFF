@@ -5,21 +5,21 @@
  */
 package Interface;
 
+import core.ARFFile;
+import core.AttributeDetails;
 import java.awt.Component;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.util.ArrayList;
-import javax.swing.DefaultCellEditor;
 import javax.swing.JButton;
-import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
-import javax.swing.table.TableColumn;
 import weka.core.Attribute;
 import weka.core.Instances;
 import weka.core.converters.ArffLoader;
@@ -65,6 +65,7 @@ public class Interface extends javax.swing.JFrame {
         cmbGenerate = new javax.swing.JButton();
         cmbEdit = new javax.swing.JButton();
         cmbDetails = new javax.swing.JButton();
+        cmbCancel = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Generate ARFF File");
@@ -181,6 +182,15 @@ public class Interface extends javax.swing.JFrame {
             }
         });
 
+        cmbCancel.setText("Cancel");
+        cmbCancel.addMouseListener(new java.awt.event.MouseAdapter()
+        {
+            public void mousePressed(java.awt.event.MouseEvent evt)
+            {
+                cmbCancelMousePressed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -189,7 +199,9 @@ public class Interface extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(0, 45, Short.MAX_VALUE)
+                        .addGap(0, 187, Short.MAX_VALUE)
+                        .addComponent(cmbCancel)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(cmbDetails, javax.swing.GroupLayout.PREFERRED_SIZE, 84, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(cmbEdit, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -210,7 +222,8 @@ public class Interface extends javax.swing.JFrame {
                     .addComponent(cmbExit)
                     .addComponent(cmbGenerate)
                     .addComponent(cmbEdit)
-                    .addComponent(cmbDetails))
+                    .addComponent(cmbDetails)
+                    .addComponent(cmbCancel))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -244,9 +257,23 @@ public class Interface extends javax.swing.JFrame {
 
     private void cmbGenerateMousePressed(java.awt.event.MouseEvent evt)//GEN-FIRST:event_cmbGenerateMousePressed
     {//GEN-HEADEREND:event_cmbGenerateMousePressed
-        // TODO add your handling code here:
+        this.mxGenerateFile();
     }//GEN-LAST:event_cmbGenerateMousePressed
 
+    private void cmbCancelMousePressed(java.awt.event.MouseEvent evt)//GEN-FIRST:event_cmbCancelMousePressed
+    {//GEN-HEADEREND:event_cmbCancelMousePressed
+        this.mxClear();
+		this.mxFormatTable();
+		this.mxStateControls(0);
+		this.cmbSelFil.requestFocusInWindow();
+    }//GEN-LAST:event_cmbCancelMousePressed
+
+	private void mxClear()
+	{
+		this.txnNumInstances.setText("0");
+		this.txcName.setText("");		
+	}
+	
 	private void mxSelectFile()
 	{
 		boolean llOk = this.mxLoadFile();
@@ -273,7 +300,7 @@ public class Interface extends javax.swing.JFrame {
 
         //Filter extensions
         loFileChooser.addChoosableFileFilter(new FileNameExtensionFilter("*.arff", "arff"));
-        loFileChooser.addChoosableFileFilter(new FileNameExtensionFilter("*.txt", "txt"));
+        loFileChooser.addChoosableFileFilter(new FileNameExtensionFilter("*.csv", "csv"));
 		
         lnResult = loFileChooser.showOpenDialog(this);
 
@@ -327,19 +354,36 @@ public class Interface extends javax.swing.JFrame {
             new Object [][] {
             },
             new String [] {
-                "Attribute", "Type", "Details", "Edited"
+                "Index","Attribute", "Type", "Details", "Edited", "Remove", "Normalize"
             }
         ) {
         Class[] types = new Class [] {
-            java.lang.String.class, java.lang.String.class, JButton.class, java.lang.Boolean.class
+            java.lang.String.class, java.lang.String.class, java.lang.String.class, JButton.class, java.lang.Boolean.class, java.lang.Boolean.class, java.lang.Boolean.class
             };
 
+			boolean[] canEdit = new boolean[]{
+                    false, false, false, true, false, true, true
+            };
             @Override
             public Class getColumnClass(int columnIndex) {
                 return types [columnIndex];
             }
+			@Override
+			public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+			
+			
         });
         
+		this.tblAttributes.getColumnModel().getColumn(0).setPreferredWidth(20);
+		this.tblAttributes.getColumnModel().getColumn(1).setPreferredWidth(120);
+		this.tblAttributes.getColumnModel().getColumn(2).setPreferredWidth(60);
+		this.tblAttributes.getColumnModel().getColumn(3).setPreferredWidth(50);
+		this.tblAttributes.getColumnModel().getColumn(4).setPreferredWidth(25);
+		this.tblAttributes.getColumnModel().getColumn(5).setPreferredWidth(30);
+		this.tblAttributes.getColumnModel().getColumn(6).setPreferredWidth(30);
+				
         this.tblAttributes.setDefaultRenderer(String.class, formato); 
         this.tblAttributes.setDefaultRenderer(Integer.class, formato);
         
@@ -358,17 +402,16 @@ public class Interface extends javax.swing.JFrame {
             public void mouseClicked(MouseEvent e) {
                 int lnRow = tblAttributes.rowAtPoint(e.getPoint());
                 int lnColumn = tblAttributes.columnAtPoint(e.getPoint());
-
-                if (tblAttributes.getModel().getColumnClass(lnColumn).equals(JButton.class)) 
-                {
-                    for (int i = 0; i < tblAttributes.getModel().getColumnCount(); i++) 
-                    {
-                        if (tblAttributes.getModel().getColumnName(i).equals("Details")) 
-                        {
-							mxLoadDetails(lnRow);
-                        }
-                    }
-                }
+				String nameCol = tblAttributes.getModel().getColumnName(lnColumn);
+				
+				if (nameCol.equals("Details")) 
+				{
+					mxLoadDetails(lnRow);
+				}
+				if (nameCol.equals("Remove") || nameCol.equals("Normalize")) 
+				{
+					mxIsGenerate();
+				}
             }
         });
 	}
@@ -379,7 +422,7 @@ public class Interface extends javax.swing.JFrame {
 		
 		for (int i = 0; i < lnNumAttributes; i++) {
 			Attribute attribute = this.dataset.attribute(i);
-			((DefaultTableModel)this.tblAttributes.getModel()).addRow(new Object[]{attribute.name(), attribute.type(), new JButton("Details")});
+			((DefaultTableModel)this.tblAttributes.getModel()).addRow(new Object[]{i, attribute.name(), attribute.type(), new JButton("Details"), false, false, false});
 		}
 	}
 	
@@ -389,6 +432,7 @@ public class Interface extends javax.swing.JFrame {
 		this.cmbSelFil.setEnabled(false);
 		this.cmbEdit.setEnabled(false);
 		this.cmbGenerate.setEnabled(false);
+		this.cmbCancel.setEnabled(false);
 		
 		switch(state)
 		{
@@ -398,30 +442,43 @@ public class Interface extends javax.swing.JFrame {
 			case 1:
 				this.cmbDetails.setEnabled(true);
 				this.cmbEdit.setEnabled(true);
+				this.cmbCancel.setEnabled(true);
 				break;
 			case 2:
+				this.cmbDetails.setEnabled(true);
+				this.cmbEdit.setEnabled(true);
+				this.cmbGenerate.setEnabled(true);
+				this.cmbCancel.setEnabled(true);
 				break;
 			default:
 				break;
 		}
-
-		
-		
-		
 	}
 	
 	private void mxLoadDetails(int attribute)
 	{		
-		Details loForm = new Details(this, true, this.attrDetails.get(attribute), 0);
+		Details loForm = new Details(this, true, this.attrDetails.get(attribute), 0, this.dataset);
 		loForm.setVisible(true);
 		loForm.setLocationRelativeTo(this);							
 	}
 	
 	private void mxEditAttribute(int attribute)
 	{
-		Details loForm = new Details(this, true, this.attrDetails.get(attribute), 1);
+		Details loForm = new Details(this, true, this.attrDetails.get(attribute), 1, this.dataset);
 		loForm.setVisible(true);
 		loForm.setLocationRelativeTo(this);	
+		
+		if(loForm.getChanges())
+		{
+			this.attrDetails.set(attribute, loForm.getAttributeDetails());
+			// Check Edited
+			((DefaultTableModel)this.tblAttributes.getModel()).setValueAt(true , attribute, 4);
+			// Attribute Type
+			((DefaultTableModel)this.tblAttributes.getModel()).setValueAt(loForm.getAttributeDetails().getType() , attribute, 2);
+			// Dataset
+			this.dataset = loForm.getDataset();
+			this.mxStateControls(2);
+		}
 	}
 	
 	private String mxGetExtension(String tsPath)
@@ -442,6 +499,41 @@ public class Interface extends javax.swing.JFrame {
 		}
 	}
 	
+	private void mxIsGenerate()
+	{
+		DefaultTableModel model = (DefaultTableModel)this.tblAttributes.getModel();
+		
+		for (int i = 0; i < this.tblAttributes.getRowCount(); i++) {
+			if((boolean)(model.getValueAt(i, 4)) || (boolean)(model.getValueAt(i, 5)) || (boolean)(model.getValueAt(i, 6)))
+			{
+				this.mxStateControls(2);
+				return;
+			}
+		}
+		this.mxStateControls(1);
+	}
+	
+	private void mxGenerateFile()
+	{
+		Instances data = new Instances(this.dataset);
+		ARFFile arff = new ARFFile();
+		arff.setDataset(data);
+		DefaultTableModel model = (DefaultTableModel)this.tblAttributes.getModel();
+		ArrayList<Integer> deleted = new ArrayList<>();
+		
+		for (int i = 0; i < this.tblAttributes.getRowCount(); i++) {
+			if((boolean)(model.getValueAt(i, 5)))
+				deleted.add(i);
+		}
+		arff.mxRemoveAttributes(deleted);
+		
+		String name = JOptionPane.showInputDialog(this, "Introduce a name for the file:");
+
+		arff.generateFile(name + ".arff");
+		
+		JOptionPane.showMessageDialog(null, "The file was created successfully!");
+	}
+	
 	/**
 	 * @param args the command line arguments
 	 */
@@ -457,6 +549,7 @@ public class Interface extends javax.swing.JFrame {
 	}
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton cmbCancel;
     private javax.swing.JButton cmbDetails;
     private javax.swing.JButton cmbEdit;
     private javax.swing.JButton cmbExit;

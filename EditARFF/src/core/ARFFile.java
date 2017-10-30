@@ -24,6 +24,10 @@ public class ARFFile {
 
 	private Instances dataset;
 	
+	public ARFFile()
+	{
+	}
+	
 	public ARFFile(String filename)
 	{
 		this.mxLoadARFF(filename);		
@@ -85,6 +89,13 @@ public class ARFFile {
 		}
 	}
 	
+	public void mxNormalizeAttribute(int attribute, double min, double max)
+	{
+		for (int i = 0; i < this.dataset.numInstances(); i++) {
+			this.dataset.get(i).setValue(attribute, (this.dataset.get(i).value(attribute) - min) / (max - min));
+		}
+	}
+	
 	// First Index = 0
 	public void mxRemoveAttributes(ArrayList<Integer> lstAttributes)
 	{
@@ -104,7 +115,7 @@ public class ARFFile {
 			options[1] = "" + attribute;		
 			convert.setOptions(options);
 			convert.setInputFormat(this.getDataset());
-			this.setDataset(Filter.useFilter(this.getDataset(), convert));
+			this.dataset = Filter.useFilter(this.getDataset(), convert);
 		} catch (Exception exception) {
 			System.out.println("Failed to convert numeric attr. to nominal. Error message: " + exception.getMessage());				
 		}
