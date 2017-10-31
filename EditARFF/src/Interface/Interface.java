@@ -12,6 +12,8 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
@@ -66,6 +68,7 @@ public class Interface extends javax.swing.JFrame {
         cmbEdit = new javax.swing.JButton();
         cmbDetails = new javax.swing.JButton();
         cmbCancel = new javax.swing.JButton();
+        jButton1 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Generate ARFF File");
@@ -191,6 +194,15 @@ public class Interface extends javax.swing.JFrame {
             }
         });
 
+        jButton1.setText("Create");
+        jButton1.addMouseListener(new java.awt.event.MouseAdapter()
+        {
+            public void mousePressed(java.awt.event.MouseEvent evt)
+            {
+                jButton1MousePressed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -199,7 +211,9 @@ public class Interface extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(0, 187, Short.MAX_VALUE)
+                        .addGap(0, 103, Short.MAX_VALUE)
+                        .addComponent(jButton1)
+                        .addGap(18, 18, 18)
                         .addComponent(cmbCancel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(cmbDetails, javax.swing.GroupLayout.PREFERRED_SIZE, 84, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -223,7 +237,8 @@ public class Interface extends javax.swing.JFrame {
                     .addComponent(cmbGenerate)
                     .addComponent(cmbEdit)
                     .addComponent(cmbDetails)
-                    .addComponent(cmbCancel))
+                    .addComponent(cmbCancel)
+                    .addComponent(jButton1))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -267,6 +282,12 @@ public class Interface extends javax.swing.JFrame {
 		this.mxStateControls(0);
 		this.cmbSelFil.requestFocusInWindow();
     }//GEN-LAST:event_cmbCancelMousePressed
+
+    private void jButton1MousePressed(java.awt.event.MouseEvent evt)//GEN-FIRST:event_jButton1MousePressed
+    {//GEN-HEADEREND:event_jButton1MousePressed
+        // TODO add your handling code here:
+		this.mxGenerateFiles();
+    }//GEN-LAST:event_jButton1MousePressed
 
 	private void mxClear()
 	{
@@ -534,6 +555,63 @@ public class Interface extends javax.swing.JFrame {
 		JOptionPane.showMessageDialog(null, "The file was created successfully!");
 	}
 	
+	
+	private void mxGenerateFiles()
+	{
+		ArrayList<Integer> deleted = new ArrayList<>();
+		
+		deleted.add(  3);
+deleted.add(  5);
+deleted.add(  0);
+deleted.add(  9);
+deleted.add( 11);
+deleted.add(  2);
+deleted.add(  1);
+deleted.add( 20);
+deleted.add(  6);
+deleted.add( 15);
+deleted.add( 14);
+deleted.add( 10);
+deleted.add( 28);
+deleted.add( 16);
+deleted.add( 12);
+deleted.add( 21);
+deleted.add( 22);
+deleted.add( 25);
+deleted.add( 29);
+deleted.add( 30);
+deleted.add( 24);
+deleted.add( 31);
+deleted.add( 18);
+deleted.add( 13);
+deleted.add( 19);
+deleted.add( 32);
+deleted.add( 26);
+deleted.add( 17);
+deleted.add(  7);
+deleted.add( 27);
+deleted.add(  4);
+deleted.add( 23);
+deleted.add(  8);
+		int initial = deleted.size();
+		
+		
+		while(deleted.size() > 0)
+		{
+			Instances data = new Instances(this.dataset);
+			ARFFile arff = new ARFFile();
+			arff.setDataset(data);
+			
+			ArrayList<Integer> deleted2 = new ArrayList<>(deleted);
+			
+			Collections.sort (deleted2);
+			
+			arff.mxRemoveAttributes(deleted2);
+			arff.generateFile("ig" + String.format("%02d", initial - deleted.size()) + ".arff");
+			deleted.remove(0);
+		}	
+	}
+	
 	/**
 	 * @param args the command line arguments
 	 */
@@ -555,6 +633,7 @@ public class Interface extends javax.swing.JFrame {
     private javax.swing.JButton cmbExit;
     private javax.swing.JButton cmbGenerate;
     private javax.swing.JButton cmbSelFil;
+    private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel12;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JPanel jPanel1;

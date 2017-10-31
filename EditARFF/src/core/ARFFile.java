@@ -5,12 +5,13 @@
  */
 package core;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import weka.core.Instances;
 import weka.core.converters.ArffLoader;
-import weka.core.converters.ArffSaver;
 import weka.core.converters.CSVLoader;
 import weka.filters.Filter;
 import weka.filters.unsupervised.attribute.Normalize;
@@ -66,11 +67,16 @@ public class ARFFile {
 	{
 		try
 		{
+			BufferedWriter writer = new BufferedWriter(new FileWriter(namefile));
+			writer.write(this.getDataset().toString());
+			writer.flush();
+			writer.close(); 
+			/*
 			ArffSaver saver = new ArffSaver();
 			saver.setInstances(this.getDataset());
 			saver.setFile(new File(namefile));
 			saver.setDestination(new File(namefile));
-			saver.writeBatch();
+			saver.writeBatch();*/
 		}catch(IOException exception){
 			System.out.println("Failed to generate output file. Error message: " + exception.getMessage());	
 		}
